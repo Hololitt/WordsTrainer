@@ -1,14 +1,25 @@
-openapi: 3.0.3
-info:
-  title: Words Trainer Settings API
-  version: 1.0.0
-  description: API для управления настройками тренировки слов пользователя
-
 paths:
-  /api/WordsTrainer/settings/setSettings:
-    post:
-      summary: Установить настройки тренировки
-      description: Обновляет настройки пользователя для тренировки слов
+  /api/settings/words-trainer:
+    get:
+      tags: [Settings]
+      summary: Получить настройки тренировки слов
+      responses:
+        '200':
+          description: Текущие настройки пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WordsTrainerSettings'
+        '401':
+          description: Пользователь не аутентифицирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+
+    put:
+      tags: [Settings]
+      summary: Обновить настройки тренировки слов
       requestBody:
         required: true
         content:
@@ -18,21 +29,42 @@ paths:
       responses:
         '200':
           description: Настройки успешно обновлены
-        '403':
-          description: Пользователь не аутентифицирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WordsTrainerSettings'
         '400':
-          description: Некорректные данные запроса
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '401':
+          description: Пользователь не аутентифицирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
 
 components:
   schemas:
     WordsTrainerSettings:
       type: object
+      required:
+        - countLanguageCardsToRepeat
+        - correctAnswersCountToFinish
+        - flashCardsTrainingVariety
+        - languageCardsWritingEnabled
+        - translationRequestVariety
+        - correctAnswersDecrementIfMistakeEnabled
       properties:
         countLanguageCardsToRepeat:
           type: integer
+          minimum: 1
           example: 20
         correctAnswersCountToFinish:
           type: integer
+          minimum: 1
           example: 5
         flashCardsTrainingVariety:
           type: string
@@ -48,10 +80,12 @@ components:
         correctAnswersDecrementIfMistakeEnabled:
           type: boolean
           example: false
-      required:
-        - countLanguageCardsToRepeat
-        - correctAnswersCountToFinish
-        - flashCardsTrainingVariety
-        - languageCardsWritingEnabled
-        - translationRequestVariety
-        - correctAnswersDecrementIfMistakeEnabled
+
+    ErrorDTO:
+      type: object
+      properties:
+        message:
+          type: string
+          example: UNAUTHORIZED
+
+
