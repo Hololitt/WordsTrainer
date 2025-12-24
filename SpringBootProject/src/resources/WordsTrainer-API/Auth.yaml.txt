@@ -1,66 +1,99 @@
-/api/auth/login:
-  post:
-    summary: Войти в систему
-    tags:
-      - Authentication
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              username:
-                type: string
-                example: hbu
-              password:
-                type: string
-                format: password
-                example: hbu
-            required:
-              - username
-              - password
-    responses:
-      '200':
-        description: Успешный вход в систему, сессия создана
-      '401':
-        description: Неверные учетные данные
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Войти в систему
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                error:
-                  type: string
-                  example: Invalid credentials
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешный вход, сессия создана
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
 
-/api/auth/logout:
-  post:
-    summary: Выйти из системы
-    tags:
-      - Authentication
-    responses:
-      '204':
-        description: Успешный выход, сессия удалена
-      '401':
-        description: Пользователь не авторизован
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Выйти из системы
+      responses:
+        '204':
+          description: Успешный выход
+        '401':
+          description: Пользователь не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация пользователя
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                error:
-                  type: string
-                  example: UNAUTHORIZED
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '201':
+          description: Пользователь зарегистрирован
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
 
-POST /api/auth/register
-{
-  "name": "string",       // Имя пользователя
-  "email": "string",      // Email
-  "password": "string"    // Пароль
-}
-responses:
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: hbu
+        password:
+          type: string
+          format: password
+          example: hbu
 
-201 Created	
-409 Conflict		{ "message": "USERNAME_ALREADY_EXISTS" }
-400 Bad Request		{ "message": "Описание ошибки валидации" }
+    RegistrationRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Ivan
+        email:
+          type: string
+          format: email
+          example: ivan@example.com
+        password:
+          type: string
+          format: password
+          example: strongPassword123
+
+    ErrorDTO:
+      type: object
+      properties:
+        message:
+          type: string
+          example: USERNAME_ALREADY_EXISTS
+
+
