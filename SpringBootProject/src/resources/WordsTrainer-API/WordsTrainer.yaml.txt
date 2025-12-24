@@ -1,0 +1,287 @@
+openapi: 3.0.3
+info:
+  title: Words Trainer API
+  version: 1.0.0
+  description: REST API для тренировки слов, флеш-карточек и управления тренировкой
+servers:
+  - url: /api/words-trainer
+    description: Базовый URL для WordsTrainerController
+
+paths:
+  /cancel:
+    post:
+      summary: Отмена тренировки
+      description: Удаляет созданные карточки и очищает текущий контекст тренировки
+      responses:
+        '200':
+          description: Успешно
+        '403':
+          description: Пользователь не аутентифицирован
+
+  /writing-mode:
+    get:
+      summary: Получить режим письма
+      description: Возвращает, включён ли режим письма для текущего пользователя
+      responses:
+        '200':
+          description: Режим письма
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCardsWritingEnabled'
+        '403':
+          description: Пользователь не аутентифицирован
+
+  /cards/created:
+    get:
+      summary: Получить созданные карточки
+      description: Возвращает все созданные карточки текущего пользователя
+      responses:
+        '200':
+          description: Список карточек
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageCard'
+        '403':
+          description: Пользователь не аутентифицирован
+
+  /start:
+    post:
+      summary: Начать тренировку
+      description: Старт тренировки, возвращает начальный контекст и прогресс
+      responses:
+        '200':
+          description: Состояние тренировки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingStateResponseDTO'
+        '403':
+          description: Пользователь не аутентифицирован
+
+  /check-answer:
+    post:
+      summary: Проверка ответа
+      description: Проверяет ответ пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslationModel'
+      responses:
+        '200':
+          description: Результат проверки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckedAnswerDTO'
+
+  /finish:
+    post:
+      summary: Завершение тренировки
+      description: Сохраняет изученные карточки и статистику
+      responses:
+        '200':
+          description: Результат тренировки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingResultDTO'
+
+  /cards:
+    get:
+      summary: Получение карточек
+      description: Возвращает карточки по типу (all, most-difficult, recommended, random)
+      parameters:
+        - name: type
+          in: query
+          description: Тип карточек
+          schema:
+            type: string
+            default: all
+      responses:
+        '200':
+          description: Список карточек
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCardsListDTO'
+
+  /cards/validate:
+    post:
+      summary: Валидация списка карточек
+      description: Проверяет корректность переданного списка карточек
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LanguageCard'
+      responses:
+        '200':
+          description: Результат проверки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCardsListValidationDTO'
+
+  /flashcards/type:
+    get:
+      summary: Тип тренировки флеш-карточек
+      description: Возвращает тип тренировки флеш-карточек для пользователя
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlashCardsTrainingVariety'
+
+  /flashcards:
+    get:
+      summary: Повтор тренировки с флеш-карточками
+      description: Возвращает список флеш-карточек для повторения
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlashCardTrainingContext'
+
+  /flashcards/matching:
+    get:
+      summary: Повтор тренировки "matching"
+      description: Возвращает список карточек для тренировки matching
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlashCard'
+
+components:
+  schemas:
+    LanguageCardsWritingEnabled:
+      type: boolean
+
+    LanguageCard:
+      type: object
+      properties:
+        id:
+          type: integer
+        word:
+          type: string
+        translation:
+          type: string
+        userId:
+          type: integer
+
+    TrainingStateResponseDTO:
+      type: object
+      properties:
+        step:
+          type: string
+        context:
+          $ref: '#/components/schemas/TrainingContextDTO'
+        progress:
+          type: number
+        extraInfo:
+          type: string
+          nullable: true
+
+    TrainingContextDTO:
+      type: object
+      properties:
+        randomValue:
+          type: integer
+        correctAnswersCount:
+          type: integer
+        languageCardsToLearnAmount:
+          type: integer
+        learnedLanguageCardsAmount:
+          type: integer
+        correctAnswersCountToFinish:
+          type: integer
+
+    TranslationModel:
+      type: object
+      properties:
+        cardId:
+          type: integer
+        answer:
+          type: string
+
+    CheckedAnswerDTO:
+      type: object
+      properties:
+        correct:
+          type: boolean
+        userAnswer:
+          type: string
+          nullable: true
+        correctAnswer:
+          type: string
+          nullable: true
+
+    TrainingResultDTO:
+      type: object
+      properties:
+        learnedCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageCard'
+        mistakes:
+          type: object
+          additionalProperties:
+            type: integer
+
+    LanguageCardsListDTO:
+      type: object
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageCard'
+
+    LanguageCardsListValidationDTO:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        error:
+          $ref: '#/components/schemas/ErrorDTO'
+          nullable: true
+
+    ErrorDTO:
+      type: object
+      properties:
+        message:
+          type: string
+
+    FlashCardsTrainingVariety:
+      type: string
+
+    FlashCardTrainingContext:
+      type: object
+      properties:
+        card:
+          $ref: '#/components/schemas/LanguageCard'
+        sideToGuess:
+          type: string
+
+    FlashCard:
+      type: object
+      properties:
+        word:
+          type: string
+        translation:
+          type: string

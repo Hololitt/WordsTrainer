@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Words Trainer API
+  version: 1.0.0
+  description: API для работы с приложением Words Trainer
+
+paths:
+  /api/users/stats:
+    get:
+      summary: Получить статистику всех пользователей
+      tags:
+        - Users Stats
+      responses:
+        '200':
+          description: Успешно получена статистика пользователей
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usersStats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                          example: "john_doe"
+                        totalMistakesCount:
+                          type: integer
+                          example: 15
+                        countLanguageCards:
+                          type: integer
+                          example: 50
+                        languageCardsRepetitionCount:
+                          type: integer
+                          example: 120
+                  localDateTime:
+                    type: string
+                    format: date-time
+                    example: "2025-12-21T14:30:00"

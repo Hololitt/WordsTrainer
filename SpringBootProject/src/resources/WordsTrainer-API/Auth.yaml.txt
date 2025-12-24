@@ -1,0 +1,66 @@
+/api/auth/login:
+  post:
+    summary: Войти в систему
+    tags:
+      - Authentication
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                example: hbu
+              password:
+                type: string
+                format: password
+                example: hbu
+            required:
+              - username
+              - password
+    responses:
+      '200':
+        description: Успешный вход в систему, сессия создана
+      '401':
+        description: Неверные учетные данные
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: Invalid credentials
+
+/api/auth/logout:
+  post:
+    summary: Выйти из системы
+    tags:
+      - Authentication
+    responses:
+      '204':
+        description: Успешный выход, сессия удалена
+      '401':
+        description: Пользователь не авторизован
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: UNAUTHORIZED
+
+POST /api/auth/register
+{
+  "name": "string",       // Имя пользователя
+  "email": "string",      // Email
+  "password": "string"    // Пароль
+}
+responses:
+
+201 Created	
+409 Conflict		{ "message": "USERNAME_ALREADY_EXISTS" }
+400 Bad Request		{ "message": "Описание ошибки валидации" }

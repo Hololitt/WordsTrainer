@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Words Trainer Settings API
+  version: 1.0.0
+  description: API для управления настройками тренировки слов пользователя
+
+paths:
+  /api/WordsTrainer/settings/setSettings:
+    post:
+      summary: Установить настройки тренировки
+      description: Обновляет настройки пользователя для тренировки слов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordsTrainerSettings'
+      responses:
+        '200':
+          description: Настройки успешно обновлены
+        '403':
+          description: Пользователь не аутентифицирован
+        '400':
+          description: Некорректные данные запроса
+
+components:
+  schemas:
+    WordsTrainerSettings:
+      type: object
+      properties:
+        countLanguageCardsToRepeat:
+          type: integer
+          example: 20
+        correctAnswersCountToFinish:
+          type: integer
+          example: 5
+        flashCardsTrainingVariety:
+          type: string
+          enum: [ALL, RANDOM, MOST_DIFFICULT]
+          example: RANDOM
+        languageCardsWritingEnabled:
+          type: boolean
+          example: true
+        translationRequestVariety:
+          type: string
+          enum: [WORD, TRANSLATION, BOTH]
+          example: BOTH
+        correctAnswersDecrementIfMistakeEnabled:
+          type: boolean
+          example: false
+      required:
+        - countLanguageCardsToRepeat
+        - correctAnswersCountToFinish
+        - flashCardsTrainingVariety
+        - languageCardsWritingEnabled
+        - translationRequestVariety
+        - correctAnswersDecrementIfMistakeEnabled

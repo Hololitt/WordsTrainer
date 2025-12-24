@@ -1,0 +1,202 @@
+openapi: 3.0.3
+
+info:
+  title: Language Card API
+  version: 1.0.0
+  description: REST API для управления карточками слов пользователя
+
+servers:
+  - url: /api/words-trainer/language-cards
+    description: Language Card Controller
+
+tags:
+  - name: LanguageCards
+    description: Управление карточками слов
+
+paths:
+  /:
+    get:
+      tags: [LanguageCards]
+      summary: Получить все карточки пользователя
+      responses:
+        '200':
+          description: Список карточек
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageCard'
+
+    post:
+      tags: [LanguageCards]
+      summary: Создать новую карточку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageCardCreationForm'
+      responses:
+        '201':
+          description: Карточка успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCard'
+        '409':
+          description: Карточка уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+
+  /{id}:
+    get:
+      tags: [LanguageCards]
+      summary: Получить карточку по ID
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '200':
+          description: Карточка найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageCard'
+        '404':
+          description: Карточка не найдена
+
+    put:
+      tags: [LanguageCards]
+      summary: Обновить карточку
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageCardEditForm'
+      responses:
+        '200':
+          description: Карточка обновлена
+        '404':
+          description: Карточка не найдена
+        '409':
+          description: Конфликт данных
+
+    delete:
+      tags: [LanguageCards]
+      summary: Удалить карточку
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        '204':
+          description: Карточка удалена
+        '404':
+          description: Карточка не найдена
+
+  /stats/learned:
+    get:
+      tags: [LanguageCards]
+      summary: Статистика изученных слов
+      responses:
+        '200':
+          description: Статистика по датам
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+
+  /created:
+    get:
+      tags: [LanguageCards]
+      summary: Получить созданные карточки
+      responses:
+        '200':
+          description: Список карточек
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LanguageCard'
+
+  /update:
+    post:
+      tags: [LanguageCards]
+      summary: Обновить карточку по форме
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageCardFormUpdateRequest'
+      responses:
+        '200':
+          description: Карточка обновлена
+        '400':
+          description: Некорректные данные
+        '409':
+          description: Карточка уже существует
+
+components:
+  parameters:
+    CardId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        example: 1
+
+  schemas:
+    LanguageCard:
+      type: object
+      required: [id, word, translation, userId]
+      properties:
+        id:
+          type: integer
+        word:
+          type: string
+        translation:
+          type: string
+        userId:
+          type: integer
+
+    LanguageCardCreationForm:
+      type: object
+      required: [word, translation]
+      properties:
+        word:
+          type: string
+        translation:
+          type: string
+
+    LanguageCardEditForm:
+      type: object
+      required: [word, translation]
+      properties:
+        word:
+          type: string
+        translation:
+          type: string
+
+    LanguageCardFormUpdateRequest:
+      type: object
+      required: [oldForm, updatedForm]
+      properties:
+        oldForm:
+          $ref: '#/components/schemas/LanguageCardCreationForm'
+        updatedForm:
+          $ref: '#/components/schemas/LanguageCardCreationForm'
+
+    ErrorDTO:
+      type: object
+      properties:
+        message:
+          type: string
+
